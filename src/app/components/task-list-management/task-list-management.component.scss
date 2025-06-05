@@ -1,0 +1,15 @@
+:host {
+  .task-list-management-container {
+    // General container styling if needed
+  }
+
+  mat-list-item {
+    height: auto !important; // Allow list item to grow with content
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .mat-mdc-list-item-meta { // Ensure meta content (buttons) doesn't get hidden on smaller screens
+    min-width: fit-content; // Or specific width if needed
+  }
+}

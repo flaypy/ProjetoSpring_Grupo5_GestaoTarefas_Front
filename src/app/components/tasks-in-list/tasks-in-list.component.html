@@ -1,0 +1,99 @@
+<div class="tasks-in-list-container container mx-auto p-4 md:p-6 lg:p-8">
+  <div class="mb-4">
+    <button mat-stroked-button (click)="navigateBackToLists()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to All Lists
+    </button>
+  </div>
+
+  <mat-card class="shadow-xl rounded-lg">
+    <mat-card-header class="bg-gray-50 p-4 border-b">
+      <div class="flex justify-between items-center w-full">
+        <mat-card-title class="text-2xl font-semibold text-gray-700">
+          Tasks in List (ID: {{ listId }}) <!-- TODO: Fetch and display list name -->
+        </mat-card-title>
+        <button mat-flat-button color="primary" (click)="openCreateTaskInListDialog()">
+          <mat-icon>add_circle_outline</mat-icon> Add New Task to this List
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content class="p-4">
+      <!-- Filter Section for tasks in this list -->
+      <form [formGroup]="filterForm"
+            class="filter-form mb-6 p-4 bg-gray-100 rounded-md shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-5 items-start">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Filter by Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="">All Statuses</mat-option>
+            @for (status of statusOptions; track status) { <mat-option [value]="status">{{ status | titlecase }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Filter by Priority</mat-label>
+          <mat-select formControlName="priority">
+            <mat-option [value]="null">All Priorities</mat-option>
+            @for (prio of priorityOptions; track prio.value) { <mat-option [value]="prio.value">{{ prio.viewValue }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Filter by Responsible</mat-label>
+          <input matInput formControlName="responsible" placeholder="Enter responsible name">
+        </mat-form-field>
+        <div class="sm:col-span-2 md:col-span-1 flex items-center">
+          <button mat-stroked-button color="warn" (click)="clearFilters()" class="w-full">
+            <mat-icon>clear_all</mat-icon> Clear Filters
+          </button>
+        </div>
+      </form>
+
+      <mat-form-field appearance="outline" class="w-full mb-4">
+        <mat-label>Filter Table (All Visible Fields)</mat-label>
+        <input matInput (keyup)="applyTableFilter($event)" placeholder="Filter displayed tasks...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      @if (isLoading) {
+        <div class="flex justify-center items-center py-10">
+          <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+          <span class="ml-4 text-gray-600">Loading tasks...</span>
+        </div>
+      } @else if (!dataSource.data || dataSource.data.length === 0) {
+        <div class="text-center py-10 text-gray-500">
+          <mat-icon class="text-6xl opacity-50"> RssFeed</mat-icon> <!-- Changed icon -->
+          <p class="mt-4 text-xl">No tasks found in this list.</p>
+          <p>Try different filters or add a new task.</p>
+        </div>
+      } @else {
+        <div class="mat-elevation-z2 rounded-md overflow-x-auto">
+          <table mat-table [dataSource]="dataSource" matSort matSortActive="id" matSortDirection="asc" class="w-full">
+            <ng-container matColumnDef="id"> /* ... */ </ng-container>
+            <ng-container matColumnDef="description"> /* ... */ </ng-container>
+            <ng-container matColumnDef="status"> /* ... */ </ng-container>
+            <ng-container matColumnDef="priority"> /* ... */ </ng-container>
+            <ng-container matColumnDef="responsible"> /* ... */ </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="text-center">Actions</th>
+              <td mat-cell *matCellDef="let task" class="text-center">
+                <button mat-icon-button color="primary" (click)="openEditTaskDialog(task)" matTooltip="Edit Task">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="removeTaskFromThisList(task)" matTooltip="Remove from List">
+                  <mat-icon>remove_circle_outline</mat-icon>
+                </button>
+                <!-- Status change buttons -->
+                @if (task.status !== StatusTarefa.CONCLUIDA) { <button mat-icon-button (click)="quickChangeStatus(task, StatusTarefa.CONCLUIDA)" color="accent" matTooltip="Complete"><mat-icon>check_circle_outline</mat-icon></button> }
+                @if (task.status === StatusTarefa.CONCLUIDA || task.status === StatusTarefa.EM_ANDAMENTO) { <button mat-icon-button (click)="quickChangeStatus(task, StatusTarefa.PENDENTE)" matTooltip="To Pending"><mat-icon>pending_actions</mat-icon></button> }
+                @if (task.status === StatusTarefa.PENDENTE) { <button mat-icon-button (click)="quickChangeStatus(task, StatusTarefa.EM_ANDAMENTO)" matTooltip="In Progress"><mat-icon>play_circle_outline</mat-icon></button> }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr class="mat-row" *matNoDataRow><td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">No data matching filter.</td></tr>
+          </table>
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

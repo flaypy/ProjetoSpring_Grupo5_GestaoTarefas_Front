@@ -1,0 +1,25 @@
+<div class="p-1 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg shadow-xl">
+  <div class="p-6 bg-white rounded-md">
+    <h1 mat-dialog-title class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+      {{ dialogTitle }}
+    </h1>
+    <div mat-dialog-content>
+      <form [formGroup]="taskListForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>List Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter list name" required cdkFocusInitial>
+          @if (taskListForm.get('name')?.invalid && (taskListForm.get('name')?.dirty || taskListForm.get('name')?.touched)) {
+            <mat-error>{{ getErrorMessage('name') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <div mat-dialog-actions align="end" class="pt-4">
+          <button mat-stroked-button type="button" (click)="onCancel()" class="mr-2">Cancel</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="taskListForm.invalid">
+            {{ isEditMode ? 'Save Name' : 'Create List' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
