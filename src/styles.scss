@@ -1,0 +1,54 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css'; // Or your chosen theme
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f4f7f9; /* A light background for the whole page */
+  color: #333;
+}
+
+/* Custom scrollbar for a nicer look (optional) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Ensure MatDialog panelClass for rounded corners works from global styles */
+/* This targets the overlay pane where panelClass is applied */
+.cdk-overlay-pane.rounded-lg .mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 0.5rem; /* Tailwind's rounded-lg is typically 0.5rem */
+}
+/* Fallback if panelClass isn't directly styling the surface, apply to all dialogs: */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: var(--mdc-shape-medium, 8px) !important;
+}
+
+
+/* Style for snackbar success/error */
+.bg-green-500 {
+  background-color: #22c55e !important;
+  color: white !important;
+}
+.bg-red-500 {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+.text-white { /* Ensure specificity if Tailwind load order causes issues */
+  color: white !important;
+}

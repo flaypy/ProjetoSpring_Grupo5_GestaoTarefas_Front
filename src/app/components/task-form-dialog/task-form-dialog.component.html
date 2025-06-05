@@ -1,0 +1,55 @@
+<div class="p-1 bg-gradient-to-br from-purple-600 to-blue-500 rounded-lg shadow-xl">
+  <div class="p-6 bg-white rounded-md">
+    <h1 mat-dialog-title class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
+      {{ isEditMode ? 'Edit Task' : 'Create New Task' }}
+    </h1>
+    <div mat-dialog-content>
+      <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Description (Title)</mat-label>
+          <input matInput formControlName="description" placeholder="Enter task description" required>
+          @if (taskForm.get('description')?.invalid && (taskForm.get('description')?.dirty || taskForm.get('description')?.touched)) {
+            <mat-error>{{ getErrorMessage('description') }}</mat-error>
+          }
+        </mat-form-field>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status" required>
+              @for (status of statusOptions; track status) {
+                <mat-option [value]="status">{{ status | titlecase }}</mat-option>
+              }
+            </mat-select>
+            @if (taskForm.get('status')?.invalid && (taskForm.get('status')?.dirty || taskForm.get('status')?.touched)) {
+              <mat-error>{{ getErrorMessage('status') }}</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Priority</mat-label>
+            <mat-select formControlName="priority" required>
+              @for (prio of priorityOptions; track prio.value) {
+                <mat-option [value]="prio.value">{{ prio.viewValue }}</mat-option>
+              }
+            </mat-select>
+            @if (taskForm.get('priority')?.invalid && (taskForm.get('priority')?.dirty || taskForm.get('priority')?.touched)) {
+              <mat-error>{{ getErrorMessage('priority') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Responsible Person</mat-label>
+          <input matInput formControlName="responsible" placeholder="Enter name of responsible" required>
+          @if (taskForm.get('responsible')?.invalid && (taskForm.get('responsible')?.dirty || taskForm.get('responsible')?.touched)) {
+            <mat-error>{{ getErrorMessage('responsible') }}</mat-error>
+          }
+        </mat-form-field>
+        <div mat-dialog-actions align="end" class="pt-4">
+          <button mat-stroked-button type="button" (click)="onCancel()" class="mr-2">Cancel</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="taskForm.invalid">
+            {{ isEditMode ? 'Save Changes' : 'Create Task' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

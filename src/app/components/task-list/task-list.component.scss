@@ -1,0 +1,88 @@
+:host {
+  .task-list-container {
+    // General container styling if needed
+  }
+
+  .task-list-header {
+    // Ensure header has enough bottom padding if default p-4 is not enough
+    // padding-bottom: 1.5rem; // Example: increase from p-4 (1rem) if needed
+
+    .header-content-wrapper {
+      // This div uses Tailwind's flex justify-between items-center w-full gap-4
+      // If more control needed:
+      // display: flex;
+      // justify-content: space-between;
+      // align-items: center;
+      // gap: 1rem; // Tailwind gap-4
+    }
+
+    .new-task-button {
+      // Styles for the "New Task" button if Tailwind classes aren't sufficient
+      // Example: ensure it doesn't shrink too much if title is very long
+      // flex-shrink: 0; // Already added via Tailwind
+    }
+  }
+
+  .task-list-content {
+    // General content padding is p-4 from Tailwind
+  }
+
+  .filter-form {
+    // Tailwind: mb-6 p-4 bg-gray-100 rounded-md shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-5 items-start
+    // SCSS additions:
+    margin-top: 1rem; // Ensures space below the card header content (like the "New Task" button)
+
+    // The grid gap-x-4 (1rem) and gap-y-5 (1.25rem) from Tailwind should handle spacing between fields.
+    // If more specific margins per field are needed:
+    .filter-field {
+      // mat-form-field elements
+      // Example: margin-bottom: 0.5rem; // Add space below each filter field if gap-y isn't enough
+    }
+
+    .filter-hint {
+      // Tailwind: text-xs text-gray-500
+      // If it needs more space from the bottom of its mat-form-field:
+      // padding-bottom: 0.25rem; // Or adjust line-height if it's about internal spacing
+    }
+
+    .clear-filters-wrapper {
+      // Tailwind: flex items-center sm:col-start-2 md:col-start-auto lg:col-start-auto
+      // This attempts to align it better on smaller screens.
+      // If it needs to be full width on smallest screen (xs):
+      // width: 100%;
+      // @media (min-width: 640px) { // sm breakpoint
+      //   width: auto;
+      // }
+      // The button inside it (.clear-filters-button) is w-full via Tailwind, so this wrapper control is for grid positioning.
+      // To ensure it's always at the end of the line or on its own line if it doesn't fit:
+      // For lg:grid-cols-4, it's the 4th item.
+      // For md:grid-cols-3, it's the 3rd item or wraps.
+      // For sm:grid-cols-2, it's the 2nd item or wraps.
+      // The col-start utilities try to place it better when it wraps.
+      // To ensure it takes full width on small screens when it's on its own row:
+      // &.sm:col-span-2 { // If it wraps on sm and you want it full width
+      //    grid-column: span 2 / span 2;
+      // }
+      // &.md:col-span-3 { // If it wraps on md
+      //    grid-column: span 3 / span 3;
+      // }
+    }
+  }
+
+  .table-search-field {
+    // Tailwind: w-full mb-4
+    // Add top margin to separate from the filter form above it:
+    margin-top: 1.5rem; // Or adjust as needed (e.g., 2rem)
+  }
+
+  // Styling for table cells if needed for consistent height/padding
+  .tasks-table-wrapper {
+    th.mat-mdc-header-cell, td.mat-mdc-cell {
+      padding: 12px 16px; // Consistent padding
+    }
+    .actions-cell button {
+      margin-left: 4px;
+      margin-right: 4px;
+    }
+  }
+}

@@ -1,0 +1,8 @@
+<h1 mat-dialog-title class="text-xl font-semibold">{{ data.title }}</h1>
+<div mat-dialog-content>
+  <p class="text-gray-700">{{ data.message }}</p>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">{{ data.cancelText || 'Cancel' }}</button>
+  <button mat-flat-button color="warn" (click)="onConfirm()" cdkFocusInitial>{{ data.confirmText || 'Confirm' }}</button>
+</div>

@@ -1,0 +1,11 @@
+mat-form-field {
+  width: 100%;
+}
+
+.mat-mdc-form-field-error {
+  font-size: 0.75rem; /* 12px */
+}
+
+textarea[matInput] {
+  resize: vertical; /* Allow vertical resizing of textarea */
+}

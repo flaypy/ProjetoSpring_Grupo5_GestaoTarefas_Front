@@ -1,0 +1,11 @@
+.flex-spacer {
+  flex: 1 1 auto;
+}
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000; // Ensure it's above other content
+}
+.mr-2 {
+  margin-right: 0.5rem; /* 8px */
+}
