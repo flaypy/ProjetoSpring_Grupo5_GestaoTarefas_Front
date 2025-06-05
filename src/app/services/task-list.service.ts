@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-import { TaskList, Tarefa } from '../models/tarefa.model' // Assuming a shared models index or direct import
+import { catchError } from 'rxjs/operators';
+import { TaskList, Tarefa } from '../models' // Assuming a shared models index or direct import
 import { environment } from '../../environments/environment.development';
 
 @Injectable({

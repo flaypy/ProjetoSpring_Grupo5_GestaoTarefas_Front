@@ -6,8 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { TitleCasePipe } from '@angular/common';
-import { Tarefa, StatusTarefa } from '../../models/tarefa.model';
-import { PRIORITIES, PriorityOption } from '../../models/priority.model';
+import { Tarefa, StatusTarefa } from '../../models';
+import { PRIORITIES, PriorityOption } from '../../models';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 export interface TaskFormData {
