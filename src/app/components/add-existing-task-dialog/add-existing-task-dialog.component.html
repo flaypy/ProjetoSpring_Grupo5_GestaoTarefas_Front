@@ -1,19 +1,19 @@
-<h1 mat-dialog-title class="text-2xl font-semibold">Add Existing Task to List</h1>
+<h1 mat-dialog-title class="text-2xl font-semibold">Adicionando Tarefas Existentes</h1>
 <div mat-dialog-content>
   @if (isLoading) {
     <div class="flex justify-center items-center py-8">
       <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
-      <span class="ml-4">Loading available tasks...</span>
+      <span class="ml-4">Carregando tarefas...</span>
     </div>
   } @else if (availableTasks.length === 0) {
-    <p class="text-center text-gray-500 py-8">No unassigned tasks available to add.</p>
+    <p class="text-center text-gray-500 py-8">Sem tarefas disponiveis para adicionar.</p>
   } @else {
-    <p class="mb-4 text-sm text-gray-600">Select one or more tasks to add to the list.</p>
+    <p class="mb-4 text-sm text-gray-600">Selecione uma ou mais tarefas.</p>
     <mat-selection-list #taskListSelection>
       @for (task of availableTasks; track task.id) {
         <mat-list-option [value]="task.id">
           <div class="flex justify-between w-full">
-            <span class="text-gray-500 text-xs">Tarefa: {{ task.description }}</span>
+            <span class="text-gray-500 text-xs"> - Tarefa: {{ task.description }}</span>
             <span class="text-gray-500 text-xs"> - Responsável: {{ task.responsible }}</span>
           </div>
         </mat-list-option>
@@ -28,6 +28,6 @@
     color="primary"
     (click)="onConfirm()"
     [disabled]="isLoading || !taskListSelection || taskListSelection.selectedOptions.selected.length === 0">
-    Add Selected Tasks
+    Adicionar Tarefas Selecionadas
   </button>
 </div>

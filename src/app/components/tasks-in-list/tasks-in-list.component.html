@@ -29,7 +29,7 @@
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Filtrar por Status</mat-label>
           <mat-select formControlName="status">
-            <mat-option value="">All Statuses</mat-option>
+            <mat-option value="">Todos Status</mat-option>
             @for (status of statusOptions; track status) {
               <mat-option [value]="status">{{ status | titlecase }}</mat-option>
             }
@@ -52,7 +52,7 @@
         </mat-form-field>
 
         <button mat-stroked-button color="warn" (click)="clearFilters()" class="w-full h-[56px]">
-          <mat-icon>clear_all</mat-icon> Clear Filters
+          <mat-icon>clear_all</mat-icon> Limpar Filtros
         </button>
       </form>
 
@@ -63,9 +63,8 @@
         </div>
       } @else if (!dataSource.data || dataSource.data.length === 0) {
         <div class="text-center py-10 text-gray-500">
-          <mat-icon class="!w-24 !h-24 text-6xl opacity-50">task_alt</mat-icon>
-          <p class="mt-4 text-xl">No tasks found in this list.</p>
-          <p>Try different filters or add a new task.</p>
+          <p class="mt-4 text-xl">Sem tarefas encontradas nessa lista.</p>
+          <p>Tente um filtro diferente ou adicione novas tarefas.</p>
         </div>
       } @else {
         <div class="mat-elevation-z2 rounded-md overflow-x-auto">
