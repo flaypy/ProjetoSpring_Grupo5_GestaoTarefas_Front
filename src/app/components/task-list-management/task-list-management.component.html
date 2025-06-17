@@ -3,10 +3,10 @@
     <mat-card-header class="bg-gray-50 p-4 border-b">
       <div class="flex justify-between items-center w-full">
         <mat-card-title class="text-2xl font-semibold text-gray-700">
-          Task Lists Management
+          Listas de Tarefas
         </mat-card-title>
         <button mat-flat-button color="primary" (click)="openCreateTaskListDialog()">
-          <mat-icon>add_circle_outline</mat-icon> Create New List
+          <mat-icon>add_circle_outline</mat-icon> Criar Nova Lista
         </button>
       </div>
     </mat-card-header>
@@ -29,7 +29,7 @@
             <mat-list-item role="listitem" class="hover:bg-gray-100 transition-colors duration-150 rounded-md mb-2 shadow-sm border">
               <mat-icon matListItemIcon>list_alt</mat-icon>
               <div matListItemTitle class="font-medium">{{ list.name }}</div>
-              <div matListItemLine class="text-sm text-gray-500">ID: {{ list.id }} | Tasks: {{ list.tasks?.length || 0 }} (Note: tasks count might not be loaded here)</div>
+              <div matListItemLine class="text-sm text-gray-500">ID: {{ list.id }} | Tarefas: {{ list.tasks?.length || 0 }}</div>
 
               <div matListItemMeta class="flex gap-2">
                 <button mat-icon-button color="primary" (click)="openEditTaskListNameDialog(list)" matTooltip="Rename List">

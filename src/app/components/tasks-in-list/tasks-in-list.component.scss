@@ -1,12 +1,171 @@
+// Import main variables or theme configurations if you have them
+// @import 'styles/variables';
+
 :host {
-  .tasks-in-list-container {
-    // Styles for the main container
+  display: block; // Ensures the component takes up block-level space
+  width: 100%;
+}
+
+.tasks-in-list-container {
+  // Enhances the container with a maximum width for very large screens
+  // and ensures it's centered.
+  max-width: 1400px;
+
+  // Style for the main card holding all the content
+  mat-card {
+    overflow: hidden; // Prevents content from spilling out from rounded corners
   }
+
+  // Header styling
+  mat-card-header {
+    // Flex container for title and action buttons
+    .flex.justify-between {
+      flex-wrap: wrap; // Allows buttons to wrap on smaller screens
+      gap: 1rem;       // Provides spacing when items wrap
+    }
+
+    // Adiciona margem inferior aos botões de ação principais no cabeçalho
+    .flex.gap-2 > .mat-flat-button {
+      margin-bottom: 0.5rem; // 8px of space below the buttons
+    }
+  }
+
+  // Styling for the filter section
   .filter-form {
-    // Styles for the filter form specific to this component
+    mat-form-field {
+      // Ensures form fields take the full width within their grid cell
+      width: 100%;
+    }
+    // Ensures the clear button aligns nicely with the form fields
+    .mat-stroked-button {
+      height: 56px; // Matches the standard height of an outlined mat-form-field
+    }
   }
-  // Add other specific styles if needed
-  table {
+
+  // Styling for the main data table
+  .mat-elevation-z2 {
+    border-radius: 0.375rem; // 6px, matches the rounded-md class
+    overflow: hidden; // Keeps the table inside the rounded container
+  }
+
+  table.mat-table {
     width: 100%;
+
+    // Header row styling
+    .mat-mdc-header-row {
+      background-color: #f9fafb; // A light gray for the header background
+    }
+
+    // Header cell styling
+    .mat-mdc-header-cell {
+      font-weight: 600;
+      font-size: 0.875rem; // 14px
+      color: #374151; // A darker gray for header text
+    }
+
+    // Row styling with a hover effect for better UX
+    .mat-mdc-row {
+      transition: background-color 0.2s ease-in-out;
+      &:hover {
+        background-color: #f9fafb; // Light gray on hover
+      }
+    }
+
+    // Cell styling
+    .mat-mdc-cell {
+      padding: 12px 16px;
+      vertical-align: middle; // Better vertical alignment for cell content
+    }
+
+    // Status badge styling
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      font-weight: 500;
+      border-radius: 9999px; // pill shape
+      font-size: 0.75rem;   // 12px
+      line-height: 1.25;
+      text-transform: capitalize;
+
+      &.status-pendente {
+        background-color: #fef3c7; // Tailwind yellow-200
+        color: #92400e;           // Tailwind yellow-800
+      }
+      &.status-em_andamento {
+        background-color: #dbeafe; // Tailwind blue-200
+        color: #1e40af;           // Tailwind blue-800
+      }
+      &.status-concluida {
+        background-color: #d1fae5; // Tailwind green-200
+        color: #065f46;           // Tailwind green-800
+      }
+      &.status-default {
+        background-color: #e5e7eb; // Tailwind gray-200
+        color: #374151;           // Tailwind gray-700
+      }
+    }
+
+    // Priority column styling
+    .priority-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem; // spacing between icon and text
+    }
+
+    // Actions column styling
+    .actions-cell {
+      text-align: right;
+      // Adds a bit more space for the action buttons
+      .mat-mdc-button-base {
+        margin: 0 4px;
+      }
+    }
+    // No data row
+    .mat-mdc-no-data-row td {
+      text-align: center;
+      padding: 2rem;
+      color: #6b7280; // gray-500
+    }
+  }
+
+  // Empty state / placeholder when no tasks are available
+  .empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #6b7280; // Tailwind gray-500
+
+    mat-icon {
+      width: 6rem;
+      height: 6rem;
+      font-size: 6rem;
+      opacity: 0.5;
+    }
+
+    p {
+      margin-top: 1rem;
+      font-size: 1.125rem; // 18px
+    }
+  }
+
+  // Paginator styling
+  mat-paginator {
+    background-color: #f9fafb; // Same light gray as the table header
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .tasks-in-list-container {
+    // reduce padding on smaller screens
+    padding: 1rem;
+
+    mat-card-header .flex.justify-between {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .filter-form {
+      grid-template-columns: 1fr; // Stack filter inputs vertically
+    }
   }
 }

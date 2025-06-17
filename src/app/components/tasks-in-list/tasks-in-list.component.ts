@@ -1,7 +1,9 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule }
-  from '@angular/router';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule, TitleCasePipe } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { forkJoin, Subscription, switchMap, tap, finalize, catchError, of, debounceTime, Observable } from 'rxjs';
+
+// Angular Material Modules
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,15 +16,16 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
-import {TaskList, Tarefa, StatusTarefa, getPriorityByValue as getPByValue} from '../../models';
-import { TaskListService } from '../../services/task-list.service'; // For loading tasks in a list
-import { TarefaService } from '../../services/tarefa.service'; // For editing/status of tasks
+// App Specific Imports
+import { AddExistingTaskDialogComponent } from '../add-existing-task-dialog/add-existing-task-dialog.component';
+import { TaskList, Tarefa, StatusTarefa, PRIORITIES, PriorityOption, getPriorityByValue } from '../../models';
+import { TaskListService } from '../../services/task-list.service';
+import { TarefaService } from '../../services/tarefa.service';
 import { TaskFormDialogComponent, TaskFormData } from '../task-form-dialog/task-form-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../confirm-dialog/confirm-dialog.component';
-import { PRIORITIES, PriorityOption, getPriorityByValue } from '../../models';
-import { Subscription, switchMap, tap, finalize, catchError, of, debounceTime, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-tasks-in-list',
@@ -30,20 +33,19 @@ import { Subscription, switchMap, tap, finalize, catchError, of, debounceTime, O
   styleUrls: ['./tasks-in-list.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, RouterModule, ReactiveFormsModule, FormsModule,
+    CommonModule, RouterModule, ReactiveFormsModule, FormsModule, TitleCasePipe,
     MatCardModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule,
     MatTableModule, MatPaginatorModule, MatSortModule, MatFormFieldModule,
-    MatInputModule, MatSelectModule
+    MatInputModule, MatSelectModule, MatTooltipModule
   ]
 })
-export class TasksInListComponent implements OnInit, OnDestroy {
+export class TasksInListComponent implements OnInit, AfterViewInit, OnDestroy {
   listId!: number;
   taskList: TaskList | null = null;
 
   displayedColumns: string[] = ['id', 'description', 'status', 'priority', 'responsible', 'actions'];
   dataSource: MatTableDataSource<Tarefa> = new MatTableDataSource<Tarefa>();
   isLoading = true;
-  isLoadingListDetails = true;
 
   filterForm: FormGroup;
   statusOptions = Object.values(StatusTarefa);
@@ -52,13 +54,13 @@ export class TasksInListComponent implements OnInit, OnDestroy {
   public readonly StatusTarefa = StatusTarefa;
   public getPriorityView = getPriorityByValue;
 
-  private routeSubscription: Subscription | undefined;
+  private subscriptions = new Subscription();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   private taskListService = inject(TaskListService);
-  private tarefaService = inject(TarefaService); // For general task operations like update status
+  private tarefaService = inject(TarefaService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dialog = inject(MatDialog);
@@ -75,55 +77,56 @@ export class TasksInListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.routeSubscription = this.route.paramMap.pipe(
-      tap(() => {
-        this.isLoading = true;
-        this.isLoadingListDetails = true;
-      }),
+    const routeSub = this.route.paramMap.pipe(
+      tap(() => this.isLoading = true),
       switchMap(params => {
         const id = params.get('listId');
         if (id) {
           this.listId = +id;
-          // Fetch list details (name) - could be a separate call or combined if backend supports
-          // For now, we'll just load tasks. If TaskList name is needed, fetch it.
-          // This example assumes we might want the list name shown.
-          // Let's simplify: just load tasks. List name isn't in TaskListManagementComponent's TaskList items.
-          // We can fetch the list details IF needed. For now, just focus on tasks.
-          // If you also fetch list details: this.loadListDetails(this.listId);
           return this.loadTasksForList(this.listId, this.filterForm.value);
         } else {
           this.showError('Task List ID not found in route.');
           this.isLoading = false;
-          this.isLoadingListDetails = false;
-          return of([]); // Return empty observable or handle error appropriately
+          return of([]);
         }
       })
-    ).subscribe(); // Subscription managed by component lifecycle for route params
+    ).subscribe();
+    this.subscriptions.add(routeSub);
 
-    this.filterForm.valueChanges.pipe(
+    const filterSub = this.filterForm.valueChanges.pipe(
       debounceTime(300),
       tap(() => this.isLoading = true),
       switchMap(filters => this.loadTasksForList(this.listId, filters))
     ).subscribe();
+    this.subscriptions.add(filterSub);
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'priority': return item.priority;
+        case 'description': return item.description.toLocaleLowerCase();
+        default: return (item as any)[property];
+      }
+    };
   }
 
   loadTasksForList(listId: number, filters?: any): Observable<Tarefa[]> {
     this.isLoading = true;
-    let request$: Observable<Tarefa[]>;
-
-    if (filters?.status) {
-      request$ = this.taskListService.getTasksFilteredByStatus(listId, filters.status);
-    } else if (filters?.priority !== null && filters?.priority !== undefined) {
-      request$ = this.taskListService.getTasksFilteredByPriority(listId, Number(filters.priority));
-    } else if (filters?.responsible) {
-      request$ = this.taskListService.getTasksFilteredByResponsible(listId, filters.responsible);
-    } else {
-      request$ = this.taskListService.getAllTasksInList(listId); // Or getTasksByListId
-    }
-
-    return request$.pipe(
+    return this.taskListService.getAllTasksInList(listId).pipe(
       tap(tasks => {
-        this.dataSource.data = tasks;
+        let filteredTasks = tasks;
+        if (filters) {
+          filteredTasks = tasks.filter(task => {
+            const statusMatch = !filters.status || task.status === filters.status;
+            const priorityMatch = filters.priority === null || filters.priority === undefined || task.priority === filters.priority;
+            const responsibleMatch = !filters.responsible || task.responsible.toLowerCase().includes(filters.responsible.toLowerCase());
+            return statusMatch && priorityMatch && responsibleMatch;
+          });
+        }
+        this.dataSource.data = filteredTasks;
         this.cdr.detectChanges();
       }),
       catchError(err => {
@@ -133,37 +136,66 @@ export class TasksInListComponent implements OnInit, OnDestroy {
       }),
       finalize(() => {
         this.isLoading = false;
-        this.cdr.detectChanges();
-        if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
+        if (this.dataSource.paginator) {
+          this.dataSource.paginator.firstPage();
+        }
       })
     );
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-    this.dataSource.sortingDataAccessor = (item, property) => { /* ... similar to TaskListComponent ... */
-      switch (property) {
-        case 'priority': return item.priority;
-        case 'description': return item.description;
-        default: return (item as any)[property];
-      }
-    };
+  applyTableFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
   }
 
-  applyTableFilter(event: Event) { /* ... same as TaskListComponent ... */ }
-  clearFilters() { this.filterForm.reset({ status: '', priority: null, responsible: '' }); }
+  clearFilters() {
+    this.filterForm.reset({ status: '', priority: null, responsible: '' });
+  }
+
+  openAddExistingTaskDialog(): void {
+    const dialogRef = this.dialog.open<AddExistingTaskDialogComponent, never, number[]>(
+      AddExistingTaskDialogComponent, {
+        width: '500px',
+        disableClose: true,
+      }
+    );
+
+    const dialogSub = dialogRef.afterClosed().subscribe(selectedTaskIds => {
+      if (selectedTaskIds && selectedTaskIds.length > 0) {
+        this.isLoading = true;
+        const addRequests = selectedTaskIds.map(taskId =>
+          this.taskListService.addTaskToList(this.listId, taskId)
+        );
+
+        forkJoin(addRequests).pipe(
+          finalize(() => this.isLoading = false)
+        ).subscribe({
+          next: () => {
+            this.showSuccess(`${selectedTaskIds.length} task(s) added to the list successfully!`);
+            this.loadTasksForList(this.listId, this.filterForm.value).subscribe();
+          },
+          error: (err) => {
+            this.showError(`Failed to add one or more tasks. ${err.message}`);
+          }
+        });
+      }
+    });
+    this.subscriptions.add(dialogSub);
+  }
 
   openCreateTaskInListDialog(): void {
     const dialogRef = this.dialog.open<TaskFormDialogComponent, TaskFormData, Tarefa>(
       TaskFormDialogComponent, {
         width: '600px',
-        data: { isEditMode: false, listId: this.listId }, // Pass listId
-        disableClose: true, panelClass: 'rounded-lg'
+        data: { isEditMode: false, listId: this.listId },
+        disableClose: true,
       }
     );
-    dialogRef.afterClosed().subscribe(newTaskData => {
-      if (newTaskData) { // newTaskData already includes taskListId from the dialog
+    const dialogSub = dialogRef.afterClosed().subscribe(newTaskData => {
+      if (newTaskData) {
         this.isLoading = true;
         this.tarefaService.createTarefa(newTaskData).pipe(
           finalize(() => this.isLoading = false)
@@ -176,17 +208,18 @@ export class TasksInListComponent implements OnInit, OnDestroy {
         });
       }
     });
+    this.subscriptions.add(dialogSub);
   }
 
   openEditTaskDialog(task: Tarefa): void {
     const dialogRef = this.dialog.open<TaskFormDialogComponent, TaskFormData, Tarefa>(
       TaskFormDialogComponent, {
         width: '600px',
-        data: { task: { ...task }, isEditMode: true, listId: this.listId }, // Pass listId for context
-        disableClose: true, panelClass: 'rounded-lg'
+        data: { task: { ...task }, isEditMode: true, listId: this.listId },
+        disableClose: true,
       }
     );
-    dialogRef.afterClosed().subscribe(updatedTaskData => {
+    const dialogSub = dialogRef.afterClosed().subscribe(updatedTaskData => {
       if (updatedTaskData && updatedTaskData.id) {
         this.isLoading = true;
         this.tarefaService.updateTarefa(updatedTaskData.id, updatedTaskData).pipe(
@@ -200,6 +233,7 @@ export class TasksInListComponent implements OnInit, OnDestroy {
         });
       }
     });
+    this.subscriptions.add(dialogSub);
   }
 
   removeTaskFromThisList(task: Tarefa): void {
@@ -210,7 +244,7 @@ export class TasksInListComponent implements OnInit, OnDestroy {
         data: { title: 'Confirm Removal', message: `Remove task "${task.description}" from this list?`, confirmText: 'Remove' }
       }
     );
-    dialogRef.afterClosed().subscribe(confirmed => {
+    const dialogSub = dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.isLoading = true;
         this.taskListService.removeTaskFromList(this.listId, task.id!).pipe(
@@ -224,32 +258,29 @@ export class TasksInListComponent implements OnInit, OnDestroy {
         });
       }
     });
+    this.subscriptions.add(dialogSub);
   }
 
   quickChangeStatus(task: Tarefa, newStatus: StatusTarefa | string): void {
-    if (!task.id) return;
-    if (task.status === newStatus) { /* ... */ return; }
+    if (!task.id || task.status === newStatus) return;
     this.isLoading = true;
     this.tarefaService.updateTaskStatus(task.id, newStatus as string).pipe(
-      finalize(() => { this.isLoading = false; this.cdr.detectChanges(); })
+      finalize(() => { this.isLoading = false; })
     ).subscribe({
       next: (updatedTask) => {
         this.showSuccess(`Task status updated!`);
-        // Efficiently update local data source without full reload
         const index = this.dataSource.data.findIndex(t => t.id === updatedTask.id);
         if (index > -1) {
-          const updatedData = [...this.dataSource.data];
-          updatedData[index] = updatedTask;
-          this.dataSource.data = updatedData;
+          const data = this.dataSource.data;
+          data[index] = updatedTask;
+          this.dataSource.data = data; // Trigger table update
         }
-        this.cdr.detectChanges();
       },
       error: (err) => this.showError(`Status update failed. ${err.message}`)
     });
   }
 
-
-  getStatusColor(status: StatusTarefa | string): string { /* ... same as before ... */
+  getStatusColor(status: StatusTarefa | string): string {
     switch (status) {
       case StatusTarefa.PENDENTE: return 'bg-yellow-200 text-yellow-800';
       case StatusTarefa.EM_ANDAMENTO: return 'bg-blue-200 text-blue-800';
@@ -257,8 +288,9 @@ export class TasksInListComponent implements OnInit, OnDestroy {
       default: return 'bg-gray-200 text-gray-800';
     }
   }
-  getPriorityStyling(priorityValue: number): { icon: string, colorClass: string } { /* ... same as before ... */
-    const priority = getPByValue(priorityValue);
+
+  getPriorityStyling(priorityValue: number): { icon: string, colorClass: string } {
+    const priority = getPriorityByValue(priorityValue);
     return { icon: priority?.icon || 'help_outline', colorClass: priority?.colorClass || 'text-gray-600' };
   }
 
@@ -267,7 +299,7 @@ export class TasksInListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 
   private showSuccess(message: string): void { this.snackBar.open(message, 'OK', { duration: 3000 }); }

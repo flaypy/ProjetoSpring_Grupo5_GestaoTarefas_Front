@@ -50,13 +50,6 @@
         </div>
       </form>
 
-      <!-- General Table Filter -->
-      <mat-form-field appearance="outline" class="table-search-field w-full mb-4">
-        <mat-label>Filter Table (All Visible Fields)</mat-label>
-        <input matInput (keyup)="applyTableFilter($event)" placeholder="E.g., Fix bug, John Doe, PENDENTE">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-
       @if (isLoading) {
         <div class="loading-spinner flex justify-center items-center py-10">
           <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
@@ -87,9 +80,6 @@
               <td mat-cell *matCellDef="let task" class="text-center actions-cell">
                 <button mat-icon-button color="primary" (click)="openEditTaskDialog(task)" matTooltip="Edit"><mat-icon>edit</mat-icon></button>
                 <button mat-icon-button color="warn" (click)="deleteTask(task.id)" matTooltip="Delete"><mat-icon>delete</mat-icon></button>
-                @if (task.status !== StatusTarefa.CONCLUIDA) { <button mat-icon-button (click)="quickChangeStatus(task, StatusTarefa.CONCLUIDA)" color="accent" matTooltip="Complete"><mat-icon>check_circle_outline</mat-icon></button> }
-                @if (task.status === StatusTarefa.CONCLUIDA || task.status === StatusTarefa.EM_ANDAMENTO) { <button mat-icon-button (click)="quickChangeStatus(task, StatusTarefa.PENDENTE)" matTooltip="To Pending"><mat-icon>pending_actions</mat-icon></button> }
-                @if (task.status === StatusTarefa.PENDENTE) { <button mat-icon-button (click)="quickChangeStatus(task, StatusTarefa.EM_ANDAMENTO)" matTooltip="In Progress"><mat-icon>play_circle_outline</mat-icon></button> }
               </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="bg-gray-100"></tr>
