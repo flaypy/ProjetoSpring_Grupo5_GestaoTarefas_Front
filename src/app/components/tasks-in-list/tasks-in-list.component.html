@@ -39,7 +39,7 @@
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Filtrar por Prioridade</mat-label>
           <mat-select formControlName="priority">
-            <mat-option [value]="null">All Priorities</mat-option>
+            <mat-option [value]="null">Todas Prioridades</mat-option>
             @for (prio of priorityOptions; track prio.value) {
               <mat-option [value]="prio.value">{{ prio.viewValue }}</mat-option>
             }
